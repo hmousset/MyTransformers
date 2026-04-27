@@ -28,13 +28,13 @@ Core packages are listed in [requirements.txt](requirements.txt):
 - `sentencepiece`
 - additional utility packages used by the training and inference scripts
 
-Install in editable mode from the repository root:
+
+Install in editable mode from the repository root using [uv](https://github.com/astral-sh/uv):
 
 ```bash
-python -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-pip install -U pip
-pip install -e .
+uv pip install -e .
 ```
 
 Install the CUDA-compatible PyTorch build for your machine before or during this step if the default package index does not match your GPU/CUDA setup.

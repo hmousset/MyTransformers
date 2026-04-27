@@ -4,16 +4,15 @@ This guide explains the setup needed before running training, the expected datas
 
 ## 1. Create an Environment
 
-Use a Python 3.8+ environment.
+Use a Python 3.8+ environment. Recommended: [uv](https://github.com/astral-sh/uv)
 
 ```bash
-python -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-pip install -U pip
-pip install -e .
+uv pip install -e .
 ```
 
-If PyTorch needs a specific CUDA wheel on your machine, install that PyTorch build first, then run `pip install -e .`.
+If PyTorch needs a specific CUDA wheel on your machine, install that PyTorch build first, then run `uv pip install -e .`.
 
 ## 2. Create `paths.json`
 
