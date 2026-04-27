@@ -132,12 +132,12 @@ async def generate(model_name,
         engine.model_executor.driver_worker.worker.model_runner.model.load_weights(model_sd)
 
     while True:
-        prompt = input('请输入你的问题：')
+        prompt = input('Please enter your question: ')
         request_id = id(prompt)
         prompt = tokenize(prompt, tokenizer, args, encode=False)[0]
-        print(f"用户: {prompt}")
+        print(f"User: {prompt}")
         previous_token = ""
-        print("助手：", end=" ", flush=True)
+        print("Assistant: ", end=" ", flush=True)
 
         async for output in engine.generate(prompt, 
                                             sampling_params, 

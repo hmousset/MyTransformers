@@ -9,7 +9,7 @@ layer_names = []
 direction_diffs = []
 magnitude_diffs = []
 
-# 遍历模型权重
+# Iterate through model weights.
 for (tdlora_k, tdlora_v), (lora_k, lora_v) in zip(tdlora_sd.items(), lora_sd.items()):
     layer_name, weight_name = tuple(tdlora_k.rsplit('.', maxsplit=1))
     if 'weight_a' in weight_name:
@@ -23,7 +23,7 @@ for (tdlora_k, tdlora_v), (lora_k, lora_v) in zip(tdlora_sd.items(), lora_sd.ite
         lora_compute_result = torch.matmul(lora_B, lora_A)
         full_weight = full_sd[layer_name + '.weight']
         
-        # 计算方向更新差异
+        # Compute directional update difference.
         tdlora_cosine_similarity = torch.nn.functional.cosine_similarity(tdlora_compute_result + full_weight, full_weight, dim=0)
         tdlora_direction_update = torch.mean(torch.ones(full_weight.shape[1]).to(tdlora_cosine_similarity.device) - tdlora_cosine_similarity)
         
@@ -32,13 +32,13 @@ for (tdlora_k, tdlora_v), (lora_k, lora_v) in zip(tdlora_sd.items(), lora_sd.ite
         
         direction_diff = (tdlora_direction_update - lora_direction_update).item()
         
-        # 计算大小更新差异
+        # Compute magnitude update difference.
         tdlora_magnitude_update = torch.linalg.norm(tdlora_compute_result + full_weight, dim=1) - torch.linalg.norm(full_weight, dim=1)
         lora_magnitude_update = torch.linalg.norm(lora_compute_result + full_weight, dim=1) - torch.linalg.norm(full_weight, dim=1)
         
         magnitude_diff = (torch.mean(tdlora_magnitude_update) - torch.mean(lora_magnitude_update)).item()
         
-        # 存储结果
+        # Store results.
         layer_names.append(layer_name)
         direction_diffs.append(direction_diff)
         magnitude_diffs.append(magnitude_diff)

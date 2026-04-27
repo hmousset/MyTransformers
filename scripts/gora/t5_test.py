@@ -64,10 +64,10 @@ def preprocess_function(examples, task_name):
 
 def compute_accuracy(predictions, labels):
     if isinstance(predictions[0], (int, np.integer)):
-        # 数字标签
+        # Numeric labels.
         correct = sum(1 for pred, label in zip(predictions, labels) if pred == label)
     else:
-        # 文本标签
+        # Text labels.
         correct = sum(1 for pred, label in zip(predictions, labels) if str(pred).strip().lower() == str(label).strip().lower())
     
     accuracy = correct / len(predictions) if len(predictions) > 0 else 0.0

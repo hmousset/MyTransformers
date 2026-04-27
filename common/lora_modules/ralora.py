@@ -1,5 +1,5 @@
 # author: jingqi ye
-# Gradient Intrinsic Dimensionality Alignment：Narrowing The Gap Between Low-Rank Adaptation and Full Fine-Tuning
+# Gradient Intrinsic Dimensionality Alignment: Narrowing The Gap Between Low-Rank Adaptation and Full Fine-Tuning
 import os
 import math
 import json
@@ -298,7 +298,7 @@ def count_singular_values_by_variance_threshold(gradient_matrix: torch.Tensor, c
     else:
         count = indices_above_threshold.min().item() + 1
         
-    del S, singular_values_squared, total_variance, variance_ratios, cumulative_variance_ratios, gradient_matrix # 释放不再需要的内存
+    del S, singular_values_squared, total_variance, variance_ratios, cumulative_variance_ratios, gradient_matrix # Release memory that is no longer needed.
 
     return max(1.0, count)
 

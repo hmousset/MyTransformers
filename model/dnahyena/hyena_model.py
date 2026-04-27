@@ -424,7 +424,7 @@ def _init_weights(module,
     if rescale_prenorm_residual:
         # Reinitialize selected weights subject to the OpenAI GPT-2 Paper Scheme:
         #   > A modified initialization which accounts for the accumulation on the residual path with model depth. Scale
-        #   > the weights of residual layers at initialization by a factor of 1/√N where N is the # of residual layers.
+        #   > the weights of residual layers at initialization by a factor of 1/sqrt(N), where N is the number of residual layers.
         #   >   -- GPT-2 :: https://openai.com/blog/better-language-models/
         #
         # Reference (Megatron-LM): https://github.com/NVIDIA/Megatron-LM/blob/main/megatron/model/gpt_model.py
@@ -684,25 +684,25 @@ if __name__ == '__main__':
     hyena_config.mode='pool'
     model = HyenaDNAModel(hyena_config=hyena_config)
 
-    # 准备输入数据
+    # Prepare input data.
     batch_size = 4
     seq_len = 128
     input_ids = torch.randint(0, hyena_config.vocab_size, (batch_size, seq_len), device=hyena_config.device)
     position_ids = torch.arange(seq_len, device=hyena_config.device).unsqueeze(0).expand(batch_size, -1)
 
-    # 测试前向传播
+    # Test the forward pass.
     if model.use_head:
         outputs = model(input_ids, position_ids)
         print(outputs)
-        print(f"Output shape: {outputs.shape}")  # 输出形状为 (batch_size, n_classes)
+        print(f"Output shape: {outputs.shape}")  # Output shape: (batch_size, n_classes)
     else:
         hidden_states = model(input_ids, position_ids)
-        print(f"Hidden states shape: {hidden_states.shape}")  # 输出形状为 (batch_size, seq_len, dim)
+        print(f"Hidden states shape: {hidden_states.shape}")  # Output shape: (batch_size, seq_len, dim)
 
-    # 测试模型参数
+    # Test model parameters.
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
 
-    # 测试梯度计算
+    # Test gradient computation.
     if model.use_head:
         outputs.sum().backward()
     else:

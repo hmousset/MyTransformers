@@ -1,5 +1,5 @@
 """
-@function:一些有用的小工具
+@function: useful small utilities
 @author:hhn
 @time:2024-01
 """
@@ -29,12 +29,12 @@ def print_progress_bar(iteration=None,
                        arrow='>',
                        print_end="\r"):
     """
-    作用：打印进度条的函数
-    输入：当前伦次，总轮次，前后缀，进度条长度，进度条字符
-    输出：带前后缀的进度条"""
-    assert iteration is not None or total is not None, '当前轮次和总轮次不能为空'
+    Purpose: print a progress bar.
+    Inputs: current iteration, total iterations, prefix/suffix, bar length, and fill characters.
+    Output: a progress bar with the prefix and suffix."""
+    assert iteration is not None or total is not None, 'iteration and total cannot both be None'
     if prefix == '' and suffix == '':
-        warnings.warn('当前的进度条前后缀为空，请确保不需要前后缀')
+        warnings.warn('The current progress bar has no prefix or suffix; make sure this is intended.')
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int(length * iteration // total)
     bar = fill * (filled_length-1) + arrow + '-' * (length - filled_length)
@@ -51,7 +51,7 @@ def attach_wrapper(obj, func=None):
     return func
 
 def timer(func):
-    """计时装饰器"""
+    """Timing decorator."""
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -62,12 +62,14 @@ def timer(func):
     return wrapper
 
 def retry(max_attempts:int=3, delay:int=1, print_trace_back=False, return_error_info=False):
-    """重试装饰器
-    给装饰器再加一层，可以实现添加参数的效果
-    带参数的装饰器如果直接用@retry会出错，而通过partial可以时装饰器不通过@retry()方式调用也可以
-    [因为直接使用时max_attempts和delay必须被关键字指定]
+    """Retry decorator.
+    This extra decorator layer allows parameters to be attached.
+    A parameterized decorator cannot be used directly as @retry, while partial
+    lets callers use it without @retry() syntax.
+    This is needed because max_attempts and delay must be keyword arguments when
+    used directly.
     """
-    assert isinstance(max_attempts, int) and isinstance(delay, int), '参数必须是整数'
+    assert isinstance(max_attempts, int) and isinstance(delay, int), 'parameters must be integers'
 
     def decorator(func):
         @wraps(func)
@@ -79,7 +81,7 @@ def retry(max_attempts:int=3, delay:int=1, print_trace_back=False, return_error_
                 except Exception:
                     if print_trace_back:
                         e = traceback.format_exc()
-                        error_info = f">>>函数{func.__name__}第{attempts + 1}次尝试失败，报错信息为: {e}"
+                        error_info = f">>>Function {func.__name__} failed on attempt {attempts + 1}. Error: {e}"
                         print(error_info)
                     time.sleep(delay)
                     attempts += 1
@@ -105,8 +107,8 @@ def retry(max_attempts:int=3, delay:int=1, print_trace_back=False, return_error_
 
 def auto_logging(level, name=None, message=None):
     """
-    自动记录日志
-    可以通过set_level和set_message改变日志记录的内容
+    Automatically log calls.
+    Use set_level and set_message to change the logged content.
     """
     def decorator(func):
         log_name = name if name else func.__module__
@@ -120,9 +122,8 @@ def auto_logging(level, name=None, message=None):
         
         @attach_wrapper(wrapper)
         def set_level(new_level):
-            '''通过attach_wrapper装饰器，
-            让set_level()函数成为wrapper装饰器的属性wrapper.set_level，
-            可以通过func.set_level(new_level)使用'''
+            '''Use attach_wrapper so set_level() becomes wrapper.set_level
+            and can be called as func.set_level(new_level).'''
             nonlocal level
             level = new_level
 
@@ -149,35 +150,35 @@ def type_assert(*type_args, **type_kwargs):
             bound_values = sig.bind(*args, **kwargs)
             for name, value in bound_values.apply_defaults.items():
                 if name in bound_types and not isinstance(value, bound_types[name]):
-                    raise TypeError(f'参数{name}必须是{bound_types[name]}类型')
+                    raise TypeError(f'parameter {name} must be of type {bound_types[name]}')
             return func(*args, **kwargs)
         return wrapper
     return decorator        
 
 def ensure_directory_exists(directory):
-    """确保目录存在"""
+    """Ensure the directory exists."""
     if not os.path.exists(directory):
         os.makedirs(directory)
-        print('>>> 目录不存在，已新建对应目录')
+        print('>>> Directory did not exist; created it.')
 
 def print_separator(char='-'):
-    """打印分隔线"""
+    """Print a separator line."""
     print(char * 80)
 
 def get_current_time() -> str:
-    """获取当前时间的字符串表示"""
+    """Return the current time as a string."""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def ask_yes_no(question):
-    """询问Yes/No问题"""
+    """Ask a Yes/No question."""
     answer = input(f"{question} (y/n): ").lower()
     while answer not in ('y', 'n'):
         answer = input("Please enter 'y' or 'n': ").lower()
     return answer == 'y'
 
 def debugger():
-    '''作用：命令行debug环境控制器
-    使用方式：在代码开头设置os.environ(["debug"])=True
+    '''Command-line debug environment controller.
+    Usage: set os.environ(["debug"])=True at the beginning of the code.
     from utils import debugger
     debugger()
     code'''
@@ -195,13 +196,13 @@ def re_search(regex: typing.Union[typing.Pattern[str], str],
               dotall: bool=True,
               default: str="") -> str:
     """
-    抽取正则规则的结果
+    Extract a regex match.
 
-    :param regex: 正则对象或字符串
-    :param text: 被查找的字符串
-    :param dotall: 正则.是否匹配所有字符
-    :param default: 找不到时的默认值
-    :return: 抽取正则规则的结果
+    :param regex: regex object or string
+    :param text: searched string
+    :param dotall: whether "." matches all characters
+    :param default: default value when no match is found
+    :return: extracted regex result
     """
     if isinstance(text, bytes):
         text = text.decode("utf-8")
@@ -225,10 +226,10 @@ def get_package_version(package_name):
     
 def has_parameter(func, parameter_name):
     """
-    判断函数是否具有特定参数
-    :param func: 要检查的函数
-    :param parameter_name: 要检查的参数名
-    :return: True（如果函数具有该参数）或 False（如果函数不具有该参数）
+    Check whether a function has a specific parameter.
+    :param func: function to inspect
+    :param parameter_name: parameter name to check
+    :return: True if the function has the parameter, otherwise False
     """
     signature = inspect.signature(func)
     parameters = signature.parameters

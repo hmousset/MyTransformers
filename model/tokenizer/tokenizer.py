@@ -151,7 +151,7 @@ class GemmaDNATokenizer(DNATokenizer, BaseTokenizer):
         
 @registry.register_tokenizer("llama3")
 class Llama3Tokenizer:
-    # TODO: 添加单核苷酸分词功能
+    # TODO: Add single-nucleotide tokenization.
     """
     Tokenizing and encoding/decoding text using the Tiktoken tokenizer.
 
@@ -290,14 +290,14 @@ class Llama3Tokenizer:
         slice_start = 0
 
         for i in range(len(s)):
-            # 是否是空白字符
+            # Check whether the current character is whitespace.
             is_now_space = s[i].isspace()
 
             if current_slice_is_space ^ is_now_space:
                 current_slice_len = 1
                 current_slice_is_space = is_now_space
             else:
-                # 如果不是空白字符
+                # If it is not whitespace.
                 current_slice_len += 1
                 if current_slice_len > max_consecutive_slice_len:
                     yield s[slice_start:i]

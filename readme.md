@@ -1,43 +1,134 @@
-## 环境配置：
-本仓库对环境的要求比较低：
-- transformers
-- liger_kernrl
-- 大于1.5.4的deepspeed
-- 大于2.2的torch
+# MyTransformers
 
-## 使用方法：
+MyTransformers is a research training codebase for language models, multimodal omics models, and many LoRA-style parameter-efficient fine-tuning methods. It provides local PyTorch model implementations, Hugging Face model loading, DeepSpeed distributed training, sequence and pipeline parallelism, flexible dataset wrappers, and a registry system for models, tokenizers, datasets, and paths.
 
-- python setup.py install 配置环境
-- scripts/有一些训练脚本的示例
-- 调整脚本中的参数，具体参数的意思可以查看common/parser.py中的注释
-- 需要注意的是参数中的地址配置。本项目配置的是既可以通过指明地址来配置，也可以通过指明名字来配置
-    - 比如配置ckpt path可以在脚本中直接写明地址
-    - 也可以事先在MyTransfomers/paths.json文件中写入地址, 如下代码中配置了llama的tokenizer地址，那么通过llama的名字就可以取出该地址
+## Documentation
 
-- 设置好参数之后运行该脚本即可启动训练
+- [How to run the code](docs/running.md)
+- [Architecture guide](docs/architecture.md)
+- [Training package notes](train/readme.md)
+- [Common utilities notes](common/readme.md)
+- [Script and argument notes](scripts/readme.md)
 
-## 支持的功能：
-1. 使用liger_kernel减小训练显存使用，加速训练
-2. 使用deepspeed分布式训练，支持流水线并行，序列并行
-3. 支持使用transformers模型和tokenizer
-4. 支持20+ LoRA算法，架构清晰，易学习
-5. 支持灵活的optimizer设置
-6. 支持使用多种不同的attention implementation，支持对sdpa后端进行设置
-7. 支持多种不同的数据集
-8. 支持多节点训练
-9. 灵活的注册器机制
+The original Chinese PDF is still present as `MyTransformers_document.pdf`; the Markdown guides above are the English documentation you should use day to day.
 
-   
-## 详细的文档：
-[MyTransformer使用文档](https://github.com/hhnqqq/MyTransformers/blob/main/MyTransformers_document.pdf)
-## 多机多卡训练
-[sacc](https://github.com/hhnqqq/sacc_beijingcloud)
+## Requirements
 
-## 本仓库成果
+The project targets Python 3.8+ and GPU training with PyTorch and DeepSpeed.
+
+Core packages are listed in [requirements.txt](requirements.txt):
+
+- `torch`
+- `deepspeed`
+- `transformers`
+- `liger_kernel`
+- `bitsandbytes`
+- `vllm`
+- `wandb`
+- `sentencepiece`
+- additional utility packages used by the training and inference scripts
+
+Install in editable mode from the repository root:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -e .
+```
+
+Install the CUDA-compatible PyTorch build for your machine before or during this step if the default package index does not match your GPU/CUDA setup.
+
+## Required Local Paths
+
+The `common` package loads `paths.json` during import. Create it in the repository root before running training or importing most project modules.
+
+For fully explicit command-line paths, an empty file is enough:
+
+```json
+{}
+```
+
+For named paths, use this shape:
+
+```json
+{
+  "tokenizer": {
+    "llama3": "/models/llama3/tokenizer.model"
+  },
+  "model": {
+    "llama3_8b": "/models/llama3/consolidated.pth"
+  },
+  "huggingface": {
+    "llama3_8b": "/models/hf/Meta-Llama-3-8B"
+  },
+  "train_dataset": {
+    "sft": "/data/train.jsonl"
+  },
+  "eval_dataset": {
+    "sft": "/data/eval.jsonl"
+  }
+}
+```
+
+Then `--model-name llama3 --variant 8b --tokenizer-name llama3 --train-dataset-name sft` can resolve paths automatically.
+
+## Quick Training Example
+
+For a small Hugging Face SFT smoke run:
+
+```bash
+deepspeed --num_gpus 1 train/u_train.py \
+  --huggingface \
+  --model-name-or-path /path/to/huggingface-model \
+  --train-dataset-path /path/to/train.jsonl \
+  --dataset-class-name iterable \
+  --mode sft \
+  --dataset-input-field input \
+  --dataset-output-field output \
+  --max-len 1024 \
+  --max-src-len 768 \
+  --batch-size-per-gpu 1 \
+  --gradient-accumulation-steps 8 \
+  --train-iters 100 \
+  --show-avg-loss-step 1 \
+  --lr 2e-5 \
+  --bf16 \
+  --device cuda \
+  --zero-stage 2 \
+  --skip-eval \
+  --experiment-name smoke_hf_sft
+```
+
+For LoRA, add:
+
+```bash
+  --use-lora \
+  --replace-modules q_proj k_proj v_proj o_proj \
+  --lora-rank 8 \
+  --lora-scaler 16 \
+  --save-trainable \
+  --output-path output
+```
+
+See [docs/running.md](docs/running.md) for local model training, dataset formats, inference, checkpoint conversion, logging, and common failures.
+
+## Supported Features
+
+1. DeepSpeed distributed training with data parallelism, ZeRO, pipeline parallelism, sequence parallelism, and multi-node launch support.
+2. Hugging Face model and tokenizer loading, plus local PyTorch implementations for Llama, Gemma, DNA Hyena, and DNABERT-related models.
+3. More than 20 LoRA and LoRA-variant implementations, including DoRA, QLoRA-style paths, AdaLoRA, GoRA, ReLoRA, PiSSA, LoRA-GA, and others.
+4. Flexible optimizer and learning-rate scheduler setup, including custom parameter groups.
+5. Multiple attention implementations, including SDPA-style Hugging Face fallback and project attention variants such as FlashAttention/Ulysses paths where configured.
+6. Several dataset classes, including normal, iterable, concatenated, packed, and multimodal DNA datasets.
+7. A registry mechanism for models, training wrappers, pipeline wrappers, tokenizers, datasets, and named filesystem paths.
+
+## Project Outputs
+
 - [NeurIPS 2025] GoRA: Gradient-driven Adaptive Low Rank Adaptation
 - [EMNLP 2025 Findings] Biology-Instructions: A Dataset and Benchmark for Multi-Omics Sequence Understanding Capability of Large Language Models
-- [ICLR 2026] Gradient Intrinsic Dimensionality Alignment：Narrowing The Gap Between Low-Rank Adaptation and Full Fine-Tuning
-- [ICLR 2026] E²LoRA: Efficient and Effective Low-Rank Adaptation with Entropy-Guided Adaptive Sharing
+- [ICLR 2026] Gradient Intrinsic Dimensionality Alignment: Narrowing The Gap Between Low-Rank Adaptation and Full Fine-Tuning
+- [ICLR 2026] E2LoRA: Efficient and Effective Low-Rank Adaptation with Entropy-Guided Adaptive Sharing
 - [Under Review] Rethinking Multi-Omics LLMs from the Perspective of Omics-Encoding
 - [Under Review] A Unified Study of LoRA Variants: Taxonomy, Review, Codebase, and Empirical Evaluation
 

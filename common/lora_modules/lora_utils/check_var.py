@@ -33,13 +33,13 @@ print(torch.linalg.matrix_norm(AAT_inv_AT))
 weight_b = torch.matmul(a, AAT_inv_AT) * (stable_scaling / lora_alpha)
 print(torch.linalg.matrix_norm(weight_b))
 print(torch.var(weight_a), torch.var(weight_b))
-# rank越大，乘出来的结果就越大，就会导致不稳定
+# Larger ranks make the multiplied result larger, which can cause instability.
 G_new = torch.matmul(weight_b, weight_a)*(lora_alpha/math.sqrt(lora_rank))
 print(torch.linalg.matrix_norm(G_new))
 # print(subspace_similarity(a,G_new))
 
 
-# 适合和lora+一起用
+# Suitable for use with LoRA+.
 # sd = torch.load(path, map_location='cpu')
 # sd = sd['model_state_dict']
 

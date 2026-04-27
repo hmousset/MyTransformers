@@ -261,13 +261,14 @@ supported dataset are listed below:{cls.list_datasets()}")
             args.ckpt_path = args.ckpt_path or paths_mapping.get(model_key)
 
         # Acquire the dataset file paths.
-        train_dataset_name = "train_dataset_" + args.train_dataset_name
+        train_dataset_name = None if args.train_dataset_name is None else "train_dataset_" + args.train_dataset_name
         eval_dataset_name = '' if args.eval_dataset_name is None else args.eval_dataset_name
         eval_dataset_name = "eval_dataset_" + eval_dataset_name
         args.train_dataset_path = args.train_dataset_path if args.train_dataset_path else paths_mapping.get(train_dataset_name, None)
         args.eval_dataset_path = args.eval_dataset_path if args.eval_dataset_path else paths_mapping.get(eval_dataset_name, None)
         
         if args.train_dataset_path is None:
+            train_dataset_name = train_dataset_name or "<no train dataset name provided>"
             raise ValueError(f"Can not find name:{train_dataset_name} in paths mapping,"
                               f"supported paths are listed below:{cls.list_paths()}")
         if args.eval_dataset_path is None and not args.skip_eval:

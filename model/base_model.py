@@ -75,7 +75,7 @@ class BaseModel(nn.Module):
         if cal_metric_pos_tensor is None:
             return {}
         else:
-            # gather后的形状和index tensor相同
+            # The gathered shape matches the index tensor shape.
             _, _, vocab_size = logits.shape
             target_logits_pos_tensor = (cal_metric_pos_tensor-1).view(-1, 1, 1).expand(-1, 1, vocab_size) # [bsz, 1, vocab_size]
             target_labels_pos_tensor = cal_metric_pos_tensor.view(-1, 1) # [bsz, 1]

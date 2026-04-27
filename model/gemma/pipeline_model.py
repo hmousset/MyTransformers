@@ -19,15 +19,15 @@ class EmbeddingPipelineLayer(nn.Module):
         #     self.weight_scaler = self.word_embeddings.weight_scaler
 
     def forward(self, inputs):
-        # attention mask和input还需要处理一下, [batch_size, input_len, 1]
+        # Attention mask and input still need processing, [batch_size, input_len, 1].
         input_ids, labels = inputs
-        # 经过embedder计算, [batch_size, input_len, hidden_size]
+        # Compute through embedder, [batch_size, input_len, hidden_size].
         hidden_states = F.embedding(input_ids, self.weight)
-        # gemma要使用hidden size对embedding输出进行正则化
+        # Gemma normalizes embedding output with hidden size.
         hidden_states = hidden_states * (torch.tensor(self.args.hidden_size)**0.5)
-        # 获得attention mask, 这里还需要验证一下
+        # Get attention mask. This still needs validation.
         attention_mask = GemmaTrainModel.get_masks(input_ids.shape[1], device=hidden_states.device, dtype=hidden_states.dtype)
-        # 获得rope频率
+        # Get RoPE frequencies.
         freqs_cis = precompute_freqs_cis(self.args.head_dim,
                                          input_ids.shape[1],
                                          theta=self.args.rope_theta,
@@ -38,7 +38,7 @@ class EmbeddingPipelineLayer(nn.Module):
         return hidden_states, freqs_cis, attention_mask, labels
 
 class DecoderPipelineLayer(nn.Module):
-    # 还需要对k,v cache进行处理
+    # K/V cache handling still needs to be added.
     def __init__(self, model: GemmaForCausalLM, layer_idx, args):
         super().__init__()
         self.layer = model.model.layers[layer_idx]

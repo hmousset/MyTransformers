@@ -85,7 +85,7 @@ class AnnealingLR(_LRScheduler):
         print_rank_0(f'--->learning rate decaying style {self.decay_style}, ratio {self.decay_ratio}%', global_rank)
 
     def get_lr(self):
-        # auto_warmup_steps并不取决于warmup的设置，而是固定的进行warmup
+        # auto_warmup_steps does not depend on warmup settings; it always applies a fixed warmup.
         if self.num_iters <= self.init_step + self.auto_warmup_steps:
             auto_lr = float(self.start_lr) * self.auto_warmup_rate
             scheduled_lr = float(self.start_lr) * self.num_iters / self.warmup_iter
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     optimizer = optim.SGD(model.parameters(), lr=0.1)
 
     # Create an instance of AnnealingLR scheduler
-    # 实验验证
+    # Experimental validation.
     decay_style = 'cosine_restarts'
     lr_scheduler = AnnealingLR(optimizer=optimizer, start_lr=0.1, warmup_iter=500, num_iters=5000,
                             decay_style=decay_style, restart_every=1000, restart_warmup_steps=100)

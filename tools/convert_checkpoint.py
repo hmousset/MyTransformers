@@ -36,7 +36,7 @@ def convert_model_to_hf(args):
         # Pipeline model checkpoint should be merged.
         model_state_dict = {}
         for path in Path(args.model_path).iterdir():
-            print("已经处理文件：{}".format(path))
+            print("Processed file: {}".format(path))
             if not path.name.startswith('layer'):
                 continue
             small_state_dict = torch.load(path, map_location="cpu")
@@ -67,22 +67,22 @@ def convert_model_to_hf(args):
 
     if not args.not_merge_lora and train_config is not None and (train_config.use_lora or train_config.use_lora_plus or train_config.use_dora):
 
-        print('合并lora权重中')
-        print('开始加载模型')
+        print('Merging LoRA weights.')
+        print('Start loading model.')
         model_cls = registry.get_model_class(args.model_name)
         model = model_cls(model_config)
-        print('替换lora层')
+        print('Replacing LoRA layers.')
         switch_to_lora(model,
                     replace_names=train_config.replace_modules,
                     rank=train_config.lora_rank,
                     use_dora=train_config.use_dora,
                     plora_steps=None)
         model.model.load_state_dict(model_state_dict, strict=False)
-        print('合并lora权重')
+        print('Merging LoRA weights.')
         for module in model.modules():
             if isinstance(module, LinearWithLoRA):
                 module.merge_and_del()
-        print('转为指定dtype')
+        print('Converting to the requested dtype.')
         if args.fp16:
             model.float16()
         else:

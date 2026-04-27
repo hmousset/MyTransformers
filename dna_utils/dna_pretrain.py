@@ -194,18 +194,18 @@ class LineByLineTextDataset(IterableDataset):
         iter_start = self.start + (self.rank * worker_info.num_workers + worker_info.id) * per_worker_lines + random_number
         line_number = 0
         with open(self.data_file, 'rt', encoding='utf-8') as f:
-            # 跳过区间之前的数据
+            # Skip data before the assigned range.
             for _ in range(iter_start):
                 f.readline()
                 line_number += 1
-            print(f"系统进程号:{os.getpid()} rank编号:{self.rank} dataloader子进程编号:{worker_info.id}, iter_start = {iter_start}")
-            # 开始加载数据，长度为per_worker_lines                
+            print(f"system pid:{os.getpid()} rank:{self.rank} dataloader worker:{worker_info.id}, iter_start = {iter_start}")
+            # Start loading data with length per_worker_lines.
             for _ in range(per_worker_lines):
                 #line = f.readline().splitlines()
-                line = f.readline().strip()  # 默认去除首尾的空格、换行等
+                line = f.readline().strip()  # Strip leading/trailing spaces and newlines by default.
                 if len(line) > 0 :
                     line_list = []
-                    # print(f"系统进程号:{os.getpid()}, line = {line}, len(line) = {len(line)}")
+                    # print(f"system pid:{os.getpid()}, line = {line}, len(line) = {len(line)}")
                     line = self.tokenizer.batch_encode_plus([line], add_special_tokens=True, max_length=self.block_size)["input_ids"]
                     line = line[0]
                     line_number += 1
@@ -214,7 +214,7 @@ class LineByLineTextDataset(IterableDataset):
                     line_list.append(self.args.local_rank)
                     line_list.append(-1)
                     line_list.extend(line)
-                    # print(f"系统进程号:{os.getpid()}, line = {line}, len(line) = {len(line)}")
+                    # print(f"system pid:{os.getpid()}, line = {line}, len(line) = {len(line)}")
                     line_list = torch.tensor(line_list, dtype=torch.long)
                     yield line_list
   
@@ -285,7 +285,7 @@ class CSVIterableDataset(IterableDataset):
             iter_end = min(self.end, iter_start + per_worker_lines)
 
             print(f"------------------------------------------------------------------------{file_name}")
-            print(f"系统进程号:{os.getpid()} rank编号:{self.rank} dataloader子进程编号:{worker_info.id}, iter_start = {iter_start}, self.end = {self.end}")
+            print(f"system pid:{os.getpid()} rank:{self.rank} dataloader worker:{worker_info.id}, iter_start = {iter_start}, self.end = {self.end}")
             data_list = random.sample(data_list, len(data_list))
             rows = data_list[iter_start:iter_end]
             # rows = random.sample(rows, len(rows))
@@ -554,7 +554,7 @@ def train(args, train_dataset, model: PreTrainedModel, tokenizer: transformers.P
         )
         num_params = count_parameters(model)
         # print(model)
-        print(f"rank = {args.rank}, 模型的参数数量为：{num_params}")
+        print(f"rank = {args.rank}, number of model parameters: {num_params}")
     # Train!
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", args.num_train_sample)

@@ -232,9 +232,9 @@ class LoRAProAdamW(Optimizer):
         I_minus_BBT_inv = torch.eye(out_features, device=B.device, dtype=B.dtype) - torch.matmul(B, B_TB_inv_B_T)
         
         grad_scale = (1 / lora_scaler ** 2)
-        # 用B的违逆压缩梯度作为A的梯度
+        # Use B's pseudo-inverse compressed gradient as A's gradient.
         grad_A_fp32 = grad_scale * torch.matmul(B_TB_inv, grad_A_orin_fp32) + torch.matmul(X, A)
-        # 用A的违逆压缩梯度作为B的梯度
+        # Use A's pseudo-inverse compressed gradient as B's gradient.
         grad_B_fp32 = grad_scale * (torch.matmul(I_minus_BBT_inv, torch.matmul(grad_B_orin_fp32, AA_T_inv))) - torch.matmul(B, X)
 
         exp_avg_A: torch.Tensor = state["exp_avg_A"]
@@ -273,4 +273,3 @@ class LoRAProAdamW(Optimizer):
             return -0.5 * (1 / lora_scaler ** 2) * torch.matmul(torch.matmul(B_TB_inv, B.T), torch.matmul(grad_B_orin_fp32, AA_T))
         else:
             return torch.zeros((B_TB_inv.shape[0], B_TB_inv.shape[0]))
-

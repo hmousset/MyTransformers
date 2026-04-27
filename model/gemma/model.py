@@ -56,14 +56,14 @@ class Sampler(nn.Module):
         if temperatures is None:
             return torch.argmax(logits, dim=-1).squeeze(dim=-1)
 
-        # Apply temperature scaling. 将产生的logits进行缩放，小于1时将使输出更加的离散
+        # Apply temperature scaling. Values below 1 make the output distribution sharper.
         logits.div_(temperatures.unsqueeze(dim=1))
 
         # Calculate probabilities with softmax.
         probs = torch.softmax(logits, dim=-1, dtype=torch.float)
         probs_sort, probs_idx = torch.sort(probs, dim=-1, descending=True)
 
-        # Apply top-p, top-k. 以下代码可能在某些环境下会无法运行
+        # Apply top-p and top-k. This code may fail in some environments.
         probs_sum = torch.cumsum(probs_sort, dim=-1)
         top_ps_mask = (probs_sum - probs_sort) > top_ps.unsqueeze(dim=1)
         probs_sort = torch.where(top_ps_mask, 0, probs_sort)
@@ -462,7 +462,7 @@ class GemmaForCausalLM(nn.Module):
         **kwargs,
     ) -> torch.Tensor:
         assert hasattr(self, "tokenizer")
-        # 按照input_positions来筛选freqs_cis
+        # Select freqs_cis according to input_positions.
         freqs_cis = self.freqs_cis.index_select(0, input_positions)
         kv_write_indices = input_positions
 

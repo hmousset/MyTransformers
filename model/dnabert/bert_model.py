@@ -448,7 +448,7 @@ class BertPooler(nn.Module):
     def forward(self,
                 hidden_states: torch.Tensor,
                 pool: Optional[bool] = True) -> torch.Tensor:
-        # 是否有必要将cls单独作为一个token放入模型中
+        # Consider whether CLS should be represented as its own token.
         # We "pool" the model by simply taking the hidden state corresponding
         # to the first token.
         first_token_tensor = hidden_states[:, 0] if pool else hidden_states
@@ -579,18 +579,18 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load('/home/bingxing2/ailab/scx6mh7/workspace/dnabert2/pytorch_model.bin', map_location='cpu'), strict=False)
     device = 'cpu'
     model.to(device)
-    # 准备输入数据
+    # Prepare input data.
     input_ids = torch.LongTensor(tokenizer.encode('ATCTCGATCGGGGAAATTTCC'), device=device).unsqueeze(0)
-    # 测试前向传播
+    # Test the forward pass.
     print(input_ids)
     hidden_states = model(input_ids)[0]
     print(hidden_states)
-    print(f"Hidden states shape: {hidden_states.shape}")  # 输出形状为 (batch_size, seq_len, d_model)
+    print(f"Hidden states shape: {hidden_states.shape}")  # Output shape: (batch_size, seq_len, d_model)
 
-    # 测试模型参数
+    # Test model parameters.
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
 
-    # 测试梯度计算
+    # Test gradient computation.
     hidden_states.mean().backward()
 
     print("Gradient check passed!")
