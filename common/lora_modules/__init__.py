@@ -26,7 +26,10 @@ from common.lora_modules.goat import *
 from common.lora_modules.lora_one import *
 from common.lora_modules.vera import *
 from common.lora_modules.eva import *
-from common.lora_modules.rasa_moe import *
+try:
+    from common.lora_modules.rasa_moe import *
+except ModuleNotFoundError:
+    pass
 from common.lora_modules.dralora import dralora_reinit
 
 @contextlib.contextmanager
@@ -143,7 +146,7 @@ def prepare_lora(model, train_dataloader, args):
         'use_lora_one': lora_one_reinit,
         'use_lora_sb': lora_sb_reinit,
         'use_gora': gora_reinit,
-        'lora_ga_pro': lora_ga_pro_reinit,
+        'use_loraga_pro': lora_ga_pro_reinit,
         'use_lora_da': lora_da_reinit,
         'use_ralora': ralora_reinit,
         'use_dralora': dralora_reinit

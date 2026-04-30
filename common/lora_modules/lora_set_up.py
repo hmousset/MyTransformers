@@ -605,21 +605,22 @@ def setup_lora(model: nn.Module, args: Namespace, model_config: Optional[Any] = 
     model.to(args.device)
 
 def get_lora_weight_names(args):
+    g = lambda attr: getattr(args, attr, False)
     conditions = [
-        (args.use_randlora, ['lambda', 'gemma']),
-        (args.use_vera, ['lambda']),
-        (args.use_ridgelora, ['weight_a', 'weight_b', 'ridge']),
-        (args.use_lora_fa, ['weight_b']),
-        (args.use_aurora , ['weight_a', 'weight_b', 'weight_ab_mixer', 'weight_a_spline']),
-        (args.use_tied_lora or args.use_delora, ['weight_a', 'weight_b', 'lambda']),
-        (args.use_lokr, ['weight_a', 'weight_b', 'weight_c']),
-        (args.use_dora or args.use_dude, ['weight_a', 'weight_b', 'origin_magnitude']),
-        (args.use_adalora or args.use_rasa, ['weight_a', 'weight_b', 'weight_e']),
-        (args.use_mos_lora or args.use_dense_lora or args.use_nlora or args.use_loda, ['weight_a', 'weight_b', 'weight_ab_mixer']),
-        (args.use_goat or args.use_lora_moe or args.use_rasamoe, ['weight_a', 'weight_b', 'gate']),
-        (args.use_lora_sb, ['weight_ab_mixer']),
-        (args.use_bslora, ['weight_a', 'weight_b', 'sampler', 'gate']),
-        (args.use_lora_dash, ['weight_a', 'weight_b', 'weight_uh_top', 'weight_v_top', 'weight_index']),
+        (g('use_randlora'), ['lambda', 'gemma']),
+        (g('use_vera'), ['lambda']),
+        (g('use_ridgelora'), ['weight_a', 'weight_b', 'ridge']),
+        (g('use_lora_fa'), ['weight_b']),
+        (g('use_aurora'), ['weight_a', 'weight_b', 'weight_ab_mixer', 'weight_a_spline']),
+        (g('use_tied_lora') or g('use_delora'), ['weight_a', 'weight_b', 'lambda']),
+        (g('use_lokr'), ['weight_a', 'weight_b', 'weight_c']),
+        (g('use_dora') or g('use_dude'), ['weight_a', 'weight_b', 'origin_magnitude']),
+        (g('use_adalora') or g('use_rasa'), ['weight_a', 'weight_b', 'weight_e']),
+        (g('use_mos_lora') or g('use_dense_lora') or g('use_nlora') or g('use_loda'), ['weight_a', 'weight_b', 'weight_ab_mixer']),
+        (g('use_goat') or g('use_lora_moe') or g('use_rasamoe'), ['weight_a', 'weight_b', 'gate']),
+        (g('use_lora_sb'), ['weight_ab_mixer']),
+        (g('use_bslora'), ['weight_a', 'weight_b', 'sampler', 'gate']),
+        (g('use_lora_dash'), ['weight_a', 'weight_b', 'weight_uh_top', 'weight_v_top', 'weight_index']),
         (True, ['weight_a', 'weight_b'])
     ]
 

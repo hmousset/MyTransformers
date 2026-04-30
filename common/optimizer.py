@@ -1,7 +1,6 @@
 import logging
 import traceback
 import torch.optim as optim
-import deepspeed.ops as ds_optim
 
 from functools import partial
 from traceback import format_exc
@@ -150,11 +149,23 @@ def get_regular_optimizer(optim_type, args, model):
         else:
             params = [{'params':[p for p in model.parameters() if p.requires_grad], 'lr': 1}]
 
+        try:
+            import deepspeed.ops as ds_optim
+            _fused_adam = partial(ds_optim.adam.FusedAdam, adam_w_mode=True)
+            _fused_adam_nw = partial(ds_optim.adam.FusedAdam, adam_w_mode=False)
+            _cpu_adamw = partial(ds_optim.adam.DeepSpeedCPUAdam, adamw_mode=True)
+            _cpu_adam = partial(ds_optim.adam.DeepSpeedCPUAdam, adamw_mode=False)
+        except ImportError:
+            _fused_adam = optim.AdamW
+            _fused_adam_nw = optim.Adam
+            _cpu_adamw = optim.AdamW
+            _cpu_adam = optim.Adam
+
         optimizer_class = {
-            'adamw': partial(ds_optim.adam.FusedAdam, adam_w_mode=True),
-            'adam': partial(ds_optim.adam.FusedAdam, adam_w_mode=False),
-            'cpuadamw':partial(ds_optim.adam.DeepSpeedCPUAdam, adamw_mode=True),
-            'cpuadam':partial(ds_optim.adam.DeepSpeedCPUAdam, adamw_mode=False),
+            'adamw': _fused_adam,
+            'adam': _fused_adam_nw,
+            'cpuadamw': _cpu_adamw,
+            'cpuadam': _cpu_adam,
             'adamax': optim.Adamax,
             'sparseadam': optim.SparseAdam,
             'torchadam': optim.Adam,
@@ -208,9 +219,17 @@ def get_increlora_optimizer(optim_type, args, model):
     try:
         params = [{'params':[p for p in model.parameters() if p.requires_grad], 'lr': 1}]
 
+        try:
+            import deepspeed.ops as ds_optim
+            _fused_adamw = partial(ds_optim.adam.FusedAdam, adam_w_mode=True)
+            _fused_adam = partial(ds_optim.adam.FusedAdam, adam_w_mode=False)
+        except ImportError:
+            _fused_adamw = optim.AdamW
+            _fused_adam = optim.Adam
+
         optimizer_class = {
-            'adamw': partial(ds_optim.adam.FusedAdam, adam_w_mode=True),
-            'adam': partial(ds_optim.adam.FusedAdam, adam_w_mode=False),
+            'adamw': _fused_adamw,
+            'adam': _fused_adam,
         }.get(optim_type)
 
         if optimizer_class is None:

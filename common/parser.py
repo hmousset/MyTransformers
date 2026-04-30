@@ -2,7 +2,6 @@ import os
 import json
 import inspect
 import argparse
-import deepspeed
 from typing import Union, List
 from transformers import logging as transformers_logging
 
@@ -587,6 +586,7 @@ def ds_parser(parser: argparse.ArgumentParser):
     group.add_argument('--zero-stage', type=int, default=-1)
 
     # Include DeepSpeed configuration arguments
+    import deepspeed
     parser = deepspeed.add_config_arguments(parser)
     return parser
 

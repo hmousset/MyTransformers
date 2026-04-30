@@ -16,11 +16,30 @@ def read_readme() -> str:
     return io.open(get_path("README.md"), "r", encoding="utf-8").read()
 
 
-def get_requirements() -> List[str]:
-    """Get Python package dependencies from requirements.txt."""
-    with open(get_path("requirements.txt")) as f:
-        requirements = f.read().strip().split("\n")
-    return requirements
+# Core deps — always required, lightweight enough for any environment.
+CORE_REQUIREMENTS = [
+    "torch",
+    "numpy",
+    "pytz",
+    "scikit-learn",
+    "sentencepiece",
+    "transformers",
+]
+
+# Optional heavy deps — needed for specific training modes.
+EXTRAS = {
+    "deepspeed": ["deepspeed", "fairscale==0.4.13"],
+    "vllm": ["vllm"],
+    "liger": ["liger_kernel"],
+    "quant": ["bitsandbytes"],
+    "logging": ["wandb"],
+    "pca": ["torch_incremental_pca"],
+    "blob": ["blobfile"],
+    "full": [
+        "deepspeed", "fairscale==0.4.13", "vllm", "liger_kernel",
+        "bitsandbytes", "wandb", "torch_incremental_pca", "blobfile",
+    ],
+}
 
 
 setuptools.setup(
@@ -40,5 +59,6 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=("benchmarks", "docs",
                                                "examples", "tests")),
     python_requires=">=3.8",
-    install_requires=get_requirements(),
+    install_requires=CORE_REQUIREMENTS,
+    extras_require=EXTRAS,
 )

@@ -7,7 +7,6 @@ import json
 import types
 import random
 import logging
-import deepspeed
 import contextlib
 import subprocess
 import configparser
@@ -18,8 +17,6 @@ from sklearn.metrics import accuracy_score, f1_score, matthews_corrcoef, precisi
 
 import pytz
 import torch
-import deepspeed
-import immutabledict
 import numpy as np
 import torch.distributed as dist
 import torch.nn.functional as F
@@ -386,6 +383,7 @@ def init_dist(args):
         args.local_rank = local_rank
         os.environ['LOCAL_RANK'] = str(local_rank)
     if args.device == 'cuda':
+        import deepspeed
         deepspeed.init_distributed(dist_backend="nccl")
         if args.local_rank == -1:
             device = torch.device("cuda")
@@ -412,8 +410,9 @@ def init_distributed_model(args, model, optimizer, lr_scheduler, ds_config, para
     """
     Set up distributed training enviroment.
     """
+    import deepspeed
     if args.disable_zero_optimizer:
-        engine, _, _, _ = deepspeed.initialize(model=model, 
+        engine, _, _, _ = deepspeed.initialize(model=model,
                                                config=ds_config, 
                                                model_parameters=[p for p in model.parameters() if p.requires_grad],
                                                mpu=None if args.num_pp_stages else parallel_states)
@@ -619,7 +618,7 @@ def load_ckpt_for_train(model: Module,
     gc.collect()
     return model_sd, optimizer_sd, lr_scheduler_sd
 
-STR_DTYPE_TO_TORCH_DTYPE = immutabledict.immutabledict({
+STR_DTYPE_TO_TORCH_DTYPE = types.MappingProxyType({
     'float16': torch.float16,
     'float': torch.float32,
     'float32': torch.float32,

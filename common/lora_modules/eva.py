@@ -16,7 +16,10 @@ from typing import Callable
 from torch import nn, Tensor
 
 from typing import Union
-from torch_incremental_pca import IncrementalPCA
+try:
+    from torch_incremental_pca import IncrementalPCA
+except ImportError:
+    IncrementalPCA = None
 from collections import Counter
 from tqdm import tqdm
 from functools import reduce
@@ -69,6 +72,8 @@ class SVDHook:
             if not check1 or not check2:
                 raise ValueError("if sim_thresh is a tensor with more than 0 dimensions it must have shape (n_components,) or (1,)")
 
+        if IncrementalPCA is None:
+            raise ImportError("EVA requires torch_incremental_pca: pip install torch_incremental_pca")
         self.svd = IncrementalPCA(n_components=n_components, copy=True, lowrank=True)
 
         self.indices = None
